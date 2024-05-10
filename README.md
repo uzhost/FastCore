@@ -5,7 +5,7 @@
 ![GitHub issues](https://img.shields.io/github/issues/uzhost/fastcore)
 
 
-This is a modified version of the russian FastCore script.
+This is an updated/modified version of the FastCore script.
 
 ## Table of contents
 * [Requirements](#requirements)
@@ -30,11 +30,11 @@ This is a modified version of the russian FastCore script.
  - Username: admin
  - Password: 123456
 
-#### Payment url's (POST notifications):
+#### Payment URLs (POST notifications):
 - **Payeer**: /payeer.php
 - **FreeKassa**: /freekassa.php
 
-#### Payment url's (return):
+#### Payment URLs (return):
 - **Success**: /user/success
 - **Fail**: /user/fail
 
@@ -43,6 +43,7 @@ This is a modified version of the russian FastCore script.
 - [x] Code re-indentation
 - [x] Code cleanup
 - [x] Bug Fixes
+- [x] Security updates
 - [x] Added: Semantic Versioning
 
 ## Contribute
