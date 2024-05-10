@@ -1,69 +1,85 @@
-<?php if(!defined('FastCore')){exit('Opss!');}
-# Заголовки
-$opt = array(
-'title' => 'Вход',
-'keywords' => 'вход в проекте',
-'description' => 'вход, войти в аккаунт, войти');
+<?php 
+if(!defined('FastCore')) {
+    exit('Oops!');
+}
 
-if(isset($_SESSION['uid'])){ Header('Location: /user/dashboard'); return; }
+# Headers
+$opt = array(
+    'title' => 'Login',
+    'keywords' => 'login to the project',
+    'description' => 'login, sign in to account, log in'
+);
+
+if(isset($_SESSION['uid'])){
+    Header('Location: /user/dashboard');
+    return;
+}
 ?>
-<h4>Форма авторизации</h4>
+<h4>Login Form</h4>
 <?php
-# Форма входа
+# Login form processing
 if (isset($_POST['auth'])){
 
-$login = $func->FLogin($_POST['email']);
-$email = $func->FMail($_POST['email']);
-$pass = $func->FPass($_POST['pass']);
+    $login = $func->FLogin($_POST['email']);
+    $email = $func->FMail($_POST['email']);
+    $pass = $_POST['pass']; // Password in plain text
 
-# Определить IP адрес
-$real_ip = $func->get_ip();
-$ip = $func->ip_int($real_ip);
+    # Determine IP address
+    $real_ip = $func->get_ip();
+    $ip = $func->ip_int($real_ip);
 
-# Если пустое поле
-if(empty($_POST['email'] and $_POST['pass'])) { $errors[] = 'Не все поля заполнены!'; }
+    # If fields are empty
+    if(empty($_POST['email']) || empty($_POST['pass'])) {
+        $errors[] = 'Not all fields are filled!';
+    }
 
-# Фильтрация данных
-if (empty(filter_var($email, FILTER_VALIDATE_EMAIL) !== false) && empty($login)) { $errors[] = 'Email или Логин заполнен неверно'; }
+    # Filter data
+    if (empty(filter_var($email, FILTER_VALIDATE_EMAIL) !== false) && empty($login)) {
+        $errors[] = 'Email or Login is filled incorrectly';
+    }
 
-# Ищем email / login
-$users = $db->query('SELECT * FROM db_users WHERE email = ? OR login = ? LIMIT 1',array($email,$login))->fetchArray();
+    # Find email / login
+    $users = $db->query('SELECT * FROM db_users WHERE email = ? OR login = ? LIMIT 1', array($email, $login))->fetchArray();
 
-# Проверка email / login
-if (!isset($users['email']) && $email) { $errors[] = 'Email не найден!'; }
-if (!isset($users['login']) && $login) { $errors[] = 'Логин не найден!'; }
+    # Check email / login
+    if (!isset($users['email']) && $email) {
+        $errors[] = 'Email not found!';
+    }
+    if (!isset($users['login']) && $login) {
+        $errors[] = 'Login not found!';
+    }
 
-if (isset($users['pass'])) {
-	# Проверка пароля
-	if(strtolower($users['pass']) != strtolower($pass)) {
-		$errors[] = 'Пароль не совпадает!';
-	}
-	# Если забанен
-	if ($users['ban'] == 1) {
-		$errors[] = 'Ваш аккаунт был заблокирован!';
-	}
-}
+    if (isset($users['pass'])) {
+        # Check password
+        if (!password_verify($pass, $users['pass'])) {
+            $errors[] = 'Password does not match!';
+        }
+        # If banned
+        if ($users['ban'] == 1) {
+            $errors[] = 'Your account has been blocked!';
+        }
+    }
 
-# Успешный вход
-if (empty($errors)) {
-	$time = time();
-	$userID = $users['id'];
-	$db->query('UPDATE db_users SET ip = ?, auth = ? WHERE id = ?',array($ip,$time,$userID));
-	$_SESSION['uid'] = $users['id'];
-	$_SESSION['login'] = $users['login'];
-	header('Location: /user/dashboard');return;
-}
-else {
-	# Вывод ошибок
-	echo '<div class="alert alert-danger"><i class="fa fa-warning"></i> '.array_shift($errors).'</div>';
-	}
+    # Successful login
+    if (empty($errors)) {
+        $time = time();
+        $userID = $users['id'];
+        $db->query('UPDATE db_users SET ip = ?, auth = ? WHERE id = ?', array($ip, $time, $userID));
+        $_SESSION['uid'] = $users['id'];
+        $_SESSION['login'] = $users['login'];
+        header('Location: /user/dashboard');
+        return;
+    } else {
+        # Display errors
+        echo '<div class="alert alert-danger"><i class="fa fa-warning"></i> ' . array_shift($errors) . '</div>';
+    }
 }
 ?>
 
 <form action="" method="POST">
-<div class="form-group mb-1"><input class="form-control" name="email" placeholder="Email или Логин"></div>
-<div class="form-group mb-1"><input type="password" class="form-control" name="pass" placeholder="Пароль"></div>
+    <div class="form-group mb-1"><input class="form-control" name="email" placeholder="Email or Login"></div>
+    <div class="form-group mb-1"><input type="password" class="form-control" name="pass" placeholder="Password"></div>
 
-<button name="auth" type="submit" class="btn btn-success">ВХОД</button>
-<a class="btn btn-white text-primary" href="/restore">Забыли пароль?</a>
+    <button name="auth" type="submit" class="btn btn-success">LOGIN</button>
+    <a class="btn btn-white text-primary" href="/restore">Forgot Password?</a>
 </form>
