@@ -1,63 +1,79 @@
-<?php if(!defined('FastCore')){exit('Opss!');}
-# Заголовки
-$opt = array(
-'title' => 'Восстановление пароля',
-'keywords' => 'Восстановление пароля в проекте',
-'description' => 'Восстановление пароля, вспомнить пароль, сбросить пароль');
+<?php 
+if (!defined('FastCore')) { 
+    exit('Oops!'); 
+}
 
-if(isset($_SESSION['uid'])){ Header('Location: /user/dashboard'); return; }
+# Headers
+$opt = array(
+    'title' => 'Password Recovery',
+    'keywords' => 'Password Recovery in the project',
+    'description' => 'Password Recovery, remember password, reset password'
+);
+
+if (isset($_SESSION['uid'])) { 
+    Header('Location: /user/dashboard'); 
+    return; 
+}
 ?>
-<h4>Введите Email который хотите восстановить</h4>
+<h4>Enter the Email you want to recover</h4>
 
 <?php
 
-# Форма регистрации
+# Registration Form
 if (isset($_POST['restore']) ){
 
-# Фильтрация
-$email = $func->FMail($_POST['email']);
-$time = time();
-$tdel = $time + 60*15;
+    # Filtering
+    $email = $func->FMail($_POST['email']);
+    $time = time();
+    $tdel = $time + 60*15;
 
-$db->query("DELETE FROM db_restore WHERE date_del < ?",$time);
+    $db->query("DELETE FROM db_restore WHERE date_del < ?",$time);
 
-# Определить IP адрес
-$real_ip = $func->get_ip();
-$ip = $func->ip_int($real_ip);
+    # Determine IP Address
+    $real_ip = $func->get_ip();
+    $ip = $func->ip_int($real_ip);
 
-# Ошибка email
-if(!empty(filter_var($email, FILTER_VALIDATE_EMAIL) !== false)) {
-	
-# Ищем пользователя
-$uml = $db->query("SELECT * FROM db_users WHERE email = ?",$email)->numRows();
-if($uml == 1){
+    # Email error
+    if (!empty(filter_var($email, FILTER_VALIDATE_EMAIL) !== false)) {
+        
+        # Check if user exists
+        $uml = $db->query("SELECT * FROM db_users WHERE email = ?",$email)->numRows();
+        if ($uml == 1) {
 
-# Пароль восстанавливался за 15 минут
-$restore = $db->query("SELECT * FROM db_restore WHERE ip = ? OR email = ?",$ip,$email)->numRows();
-if($restore == 0){
+            # Check if password was recovered within 15 minutes
+            $restore = $db->query("SELECT * FROM db_restore WHERE ip = ? OR email = ?",$ip,$email)->numRows();
+            if ($restore == 0) {
 
-	$new_pass = rand(1111111,9999999);
-	# Вносим запись в БД
-	$db->query("INSERT INTO db_restore (email, ip, date_add, date_del) VALUES (?,?,?,?)",$email,$ip,$time,$tdel);
-	$db->query('UPDATE db_users SET pass = ? WHERE email = ?',array($new_pass,$email));
+                $new_pass = rand(11111111,99999999);
+                # Hash the new password
+                $hashed_new_pass = password_hash($new_pass, PASSWORD_DEFAULT);
 
-	$mail = new send_mail;
-	$mail->send(''.$email.'', 'Восстановление пароля', 'Ваш новый пароль - '.$new_pass.'');
-	echo '<div class="alert alert-success">На ваш E-Mail адрес было отправлено сообщение.</div>';
+                # Insert record into the database
+                $db->query("INSERT INTO db_restore (email, ip, date_add, date_del) VALUES (?,?,?,?)",$email,$ip,$time,$tdel);
+                $db->query('UPDATE db_users SET pass = ? WHERE email = ?',array($hashed_new_pass,$email));
 
-	} else { $errors[] = 'Восстановление пароля с этого IP ('.$real_ip.') уже производилось за последние 15 минут!'; }
-	} else { $errors[] = 'Пользователь с таким email не найден!'; }
-	} else { $errors[] = 'Ошибка заполнения email!'; }
+                $mail = new send_mail;
+                $mail->send(''.$email.'', 'Password Recovery', 'Your new password - '.$new_pass.'');
+                echo '<div class="alert alert-success">A message has been sent to your E-Mail address.</div>';
 
-# Вывод ошибок
-if (!empty($errors)) {
-	echo '<div class="alert alert-danger"><i class="fa fa-warning"></i> '.array_shift($errors).'</div>';
-}
+            } else { 
+                $errors[] = 'Password recovery from this IP ('.$real_ip.') has already been done in the last 15 minutes!'; 
+            }
+        } else { 
+            $errors[] = 'User with such email not found!'; 
+        }
+    } else { 
+        $errors[] = 'Email field is empty or invalid!'; 
+    }
 
+    # Display errors
+    if (!empty($errors)) {
+        echo '<div class="alert alert-danger"><i class="fa fa-warning"></i> '.array_shift($errors).'</div>';
+    }
 }
 ?>
 <form action="" method="POST">
-<div class="form-group mb-1"><input class="form-control" name="email" type="email" placeholder="Email" value=""></div>
+    <div class="form-group mb-1"><input class="form-control" name="email" type="email" placeholder="Email" value=""></div>
 
-<button name="restore" type="submit" class="btn btn-success">ВОССТАНОВИТЬ</button>
+    <button name="restore" type="submit" class="btn btn-success">RECOVER</button>
 </form>
