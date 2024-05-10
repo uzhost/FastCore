@@ -26,21 +26,22 @@ $stats = $db->query("SELECT * FROM db_stats WHERE id = '1'")->fetchArray();
         <hr class="my-4">
         <div class="row mb-4">
             <div class="col-lg-2 col-md-3">
-                <p><small>Script</small></p>
-                <p>FastCore v0.8.1</p>
+                <p><small class="fw-bold">Script</small></p>
+                <p class="fs-8">FastCore v0.8.1</p>
             </div>
             <div class="col-lg-2 col-md-3">
-                <p><small>Release</small></p>
-                <p>10.05.2024</p>
+                <p><small class="fw-bold">Release</small></p>
+                <p class="fs-8">10.05.2024</p>
             </div>
             <div class="col-lg-6 col-md-6">
-                <p><small>Requirements</small></p>
-                <p>PHP 8.0, Mysqli, Utf-8, Apache, FastCGI</p>
+                <p><small class="fw-bold">Requirements</small></p>
+                <p class="fs-8">PHP 8.0, Mysqli, Utf-8, Apache, FastCGI</p>
             </div>
         </div>
         <div><a href="https://github.com/uzhost/fastcore" class="btn btn-lg btn-primary">Download</a></div>
     </div>
 </div>
+
 
 
 <div class="row text-center text-uppercase mb-3 mt-3">
@@ -82,16 +83,17 @@ $stats = $db->query("SELECT * FROM db_stats WHERE id = '1'")->fetchArray();
         </div>
     </div>
     <div class="col-lg-4">
-        <div class="p-3 border" style="font-size: 110%;">
-            <p>Development: Uzhost Group</p>
-            <p>Source: Jumast & Kolyaka105.</p>
-            <p>Github - <a href="https://github.com/uzhost/fastcore">Github/FastCore</a></p>
-            <p><b>Server Requirements:</b></p>
-            <ul>
-                <li>PHP 8.0 and above</li>
-                <li>Mysqli UTF-8 | inno_db</li>
-                <li>Apache 2.4, FastCGI, CGI</li>
-            </ul>
-        </div>
+    <div class="p-3 border rounded" style="background-color: #f8f9fa;">
+        <h5 class="mb-3">Development: Uzhost Group</h5>
+        <p>Github - <a href="https://github.com/uzhost/fastcore">Github/FastCore</a></p>
+        <hr>
+        <h6 class="mb-3">Server Requirements:</h6>
+        <ul class="list-unstyled">
+            <li>PHP 8.0 and above</li>
+            <li>Mysqli UTF-8 | inno_db</li>
+            <li>Apache 2.4, FastCGI, CGI</li>
+        </ul>
     </div>
+</div>
+
 </div>
