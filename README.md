@@ -54,15 +54,15 @@ You can contribute to this project:
 ## Donate
 If you want to contribute to this project, you can send your donation to the wallets below:
 
- - **Payeer**: P66707475
- - **TRX/USDT(TRC20)**: TRCbnUVmQcSkc3ydY8KaH98C7KhXxASYmu
- - **BNB/USDT/BUSD(BEP20)**: 0x3063D79A71Af2F784f87E13Ed29BC808Eb04123f
+ - **Payeer**: P1001110101
+ - **TON/USDT(TON NETWORK)**: UQCMPAbHos4iCxyEjRbZNgovwC7oHPXr4khHevoQPqtzJ8H-
+ - **BNB/USDT/BUSD(BEP20)**: 000
 
 ## Credits
 
 This project wouldn't be possible without our contributors:
 
 - **FastCore Creator**: The creator of FastCore. You can learn more about them on [vk.com/fastcore](https://vk.com/fastcore). 
-- **rubensrocha**: A significant contributor to the project. Check out their work on GitHub. [rubensrocha](https://github.com/rubensrocha/fastcore)
+- **rubensrocha**: A significant contributor to the project. [rubensrocha](https://github.com/rubensrocha/fastcore)
 
 We appreciate their contributions and dedication to the development of this project.
