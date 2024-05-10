@@ -1,8 +1,8 @@
 # FastCore Script
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/rubensrocha/fastcore)
-![GitHub language count](https://img.shields.io/github/languages/count/rubensrocha/fastcore)
-![GitHub top language](https://img.shields.io/github/languages/top/rubensrocha/fastcore)
-![GitHub issues](https://img.shields.io/github/issues/rubensrocha/fastcore)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/uzhost/fastcore)
+![GitHub language count](https://img.shields.io/github/languages/count/uzhost/fastcore)
+![GitHub top language](https://img.shields.io/github/languages/top/uzhost/fastcore)
+![GitHub issues](https://img.shields.io/github/issues/uzhost/fastcore)
 
 
 This is a modified version of the russian FastCore script.
@@ -48,8 +48,8 @@ This is a modified version of the russian FastCore script.
 ## Contribute
 You can contribute to this project:
 
-- [Reporting bugs](https://github.com/rubensrocha/fastcore/issues)
-- [Submitting your pull-request](https://github.com/rubensrocha/fastcore/pulls)
+- [Reporting bugs](https://github.com/uzhost/fastcore/issues)
+- [Submitting your pull-request](https://github.com/uzhost/fastcore/pulls)
 
 ## Donate
 If you want to contribute to this project, you can send your donation to the wallets below:
