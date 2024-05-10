@@ -13,7 +13,7 @@ This is a modified version of the russian FastCore script.
 * [Tasks](#tasks)
 * [Contribute](#contribute)
 * [Donate](#donate)
-* [Resources](#resources)
+* [Credits](#credits)
 
 
 ## Requirements
@@ -49,7 +49,7 @@ This is a modified version of the russian FastCore script.
 You can contribute to this project:
 
 - [Reporting bugs](https://github.com/uzhost/fastcore/issues)
-- [Submitting your pull-request](https://github.com/uzhost/fastcore/pulls)
+- [Submitting your pull request](https://github.com/uzhost/fastcore/pulls)
 
 ## Donate
 If you want to contribute to this project, you can send your donation to the wallets below:
@@ -58,6 +58,11 @@ If you want to contribute to this project, you can send your donation to the wal
  - **TRX/USDT(TRC20)**: TRCbnUVmQcSkc3ydY8KaH98C7KhXxASYmu
  - **BNB/USDT/BUSD(BEP20)**: 0x3063D79A71Af2F784f87E13Ed29BC808Eb04123f
 
-## Resources
+## Credits
 
-- FastCore Creator: [vk.com/fastcore](https://vk.com/fastcore)
+This project wouldn't be possible without our contributors:
+
+- **FastCore Creator**: The creator of FastCore. You can learn more about them on [vk.com/fastcore](https://vk.com/fastcore). 
+- **rubensrocha**: A significant contributor to the project. Check out their work on GitHub. [rubensrocha](https://github.com/rubensrocha/fastcore)
+
+We appreciate their contributions and dedication to the development of this project.
