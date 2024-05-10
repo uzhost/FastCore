@@ -1,55 +1,63 @@
-<?php if(!defined('FastCore')){exit('Oops!');}
+<?php 
+if(!defined('FastCore')){
+    exit('Oops!');
+}
 
 # Title
 $opt['title'] = 'Settings';
 ?>
 
 <div class="row">
-<div class="col-lg-6">
-<div class="card">
-<div class="card-header">Change Password</div>
-<div class="p-3">
-<?
-if(isset($_POST['new_pass'])){
-$pass = $func->FPass($_POST['pass']);
-$pass_new = $func->FPass($_POST['pass_new']);
-if($pass !== false AND strtolower($pass) == strtolower($user['pass'])){
-	if($pass_new !== false){
-		$db->query("UPDATE db_users SET pass = '$pass_new' WHERE id = '$uid'");        
-		echo '<div class="alert alert-success">Password changed successfully!</div>';
-	}else echo '<div class="alert alert-warning">New password has an invalid format!</div>';
-}else echo '<div class="alert alert-danger">Old password is incorrect!</div>';
-}
-?>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">Change Password</div>
+            <div class="p-3">
+                <?php
+                if(isset($_POST['new_pass'])){
+                    $pass = $func->FPass($_POST['pass']);
+                    $pass_new = $func->FPass($_POST['pass_new']);
+                    if($pass !== false AND password_verify($pass, $user['pass'])){
+                        if($pass_new !== false){
+                            $pass_new_hashed = password_hash($pass_new, PASSWORD_DEFAULT);
+                            $db->query("UPDATE db_users SET pass = '$pass_new_hashed' WHERE id = '$uid'");        
+                            echo '<div class="alert alert-success">Password changed successfully!</div>';
+                        }else {
+                            echo '<div class="alert alert-warning">New password has an invalid format!</div>';
+                        }
+                    }else {
+                        echo '<div class="alert alert-danger">Old password is incorrect!</div>';
+                    }
+                }
+                ?>
 
-<form action="" method="POST">
-<input type="password" class="form-control" name="pass" placeholder="Old Password">
-<input type="password" class="form-control mt-2" name="pass_new" placeholder="New Password">
-<center>
-<button class="btn btn-success mt-2" name="new_pass" type="submit">CHANGE PASSWORD</button>
-</center>
-</form>
-</div>
-</div>
-</div>
+                <form action="" method="POST">
+                    <input type="password" class="form-control" name="pass" placeholder="Old Password">
+                    <input type="password" class="form-control mt-2" name="pass_new" placeholder="New Password">
+                    <center>
+                        <button class="btn btn-success mt-2" name="new_pass" type="submit">CHANGE PASSWORD</button>
+                    </center>
+                </form>
+            </div>
+        </div>
+    </div>
 
-<div class="col-lg-6">
-<div class="card">
-<div class="card-header">Payment Details</div>
-<div class="p-3">
-<?php
-# Wallet class
-$wallet = new wallets();
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">Payment Details</div>
+            <div class="p-3">
+                <?php
+                # Wallet class
+                $wallet = new wallets();
 
-# Wallets and payment password
-$ps = $db->query('SELECT * FROM db_purse WHERE id = ?',$uid)->fetchArray();
+                # Wallets and payment password
+                $ps = $db->query('SELECT * FROM db_purse WHERE id = ?',$uid)->fetchArray();
 
-# Bind Wallet
-if(isset($_POST['save_wallet'])) {
+                # Bind Wallet
+                if(isset($_POST['save_wallet'])) {
 
-$payeer = $wallet->payeer_wallet($_POST['payeer']);
-$yandex = $wallet->yandex_wallet($_POST['yandex']);
-$qiwi = $wallet->qiwi_wallet($_POST['qiwi']);
+                    $payeer = $wallet->payeer_wallet($_POST['payeer']);
+                    $yandex = $wallet->yandex_wallet($_POST['yandex']);
+                    $qiwi = $wallet->qiwi_wallet($_POST['qiwi']);
 
 # PAYEER
 if($payeer !== false) {
