@@ -1,6 +1,6 @@
 <?php
 /**
- * File: pages/user/about.php
+ * File: pages/about.php
  * Purpose: "About" page — translated to English, safer output, improved markup
  */
 declare(strict_types=1);
@@ -54,3 +54,4 @@ $opt = [
     </ul>
   </div>
 </section>
+
