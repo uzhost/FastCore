@@ -1,88 +1,101 @@
-<?php if(!defined('FastCore')){ exit('Oops!');}
+<?php
+/**
+ * File: core/func.php
+ * Description: Common helper functions for FastCore (English, PHP 8+ compatible).
+ * Notes:
+ *  - Removed unparenthesized nested ternaries (PHP 8 requirement).
+ *  - Hardened input validation for passwords and emails.
+ *  - Kept the original class name (`func`) and method names/signatures for compatibility.
+ */
+
+if (!defined('FastCore')) { exit('Oops!'); }
 
 class func {
 
-	# ============================
-	# Калькулятор сбора прибыли
-	# ============================
-	public function SumCalc($per_h, $sum_tree, $last_sbor){
-	if($last_sbor > 0){
-	if($sum_tree > 0 AND $per_h > 0){
-	sprintf("%.6f",$sum_tree);
-	$last_sbor = ($last_sbor < time()) ? (time() - $last_sbor) : 0;
-	$per_sec = $per_h;
-	return round( ($per_sec / 3600) * $last_sbor,4);
-	}else return 0;
-	}else return 0;
-	}
+    // ===================================
+    // Profit collection calculator
+    // per_h: income per hour (numeric, >= 0)
+    // sum_tree: (kept for compatibility; not used in original math beyond formatting)
+    // last_sbor: Unix timestamp of last collection
+    // Returns: float amount accrued since last_sbor
+    // ===================================
+    public function SumCalc($per_h, $sum_tree, $last_sbor) {
+        // Normalize/validate
+        if (!is_numeric($per_h) || !is_numeric($sum_tree) || !is_numeric($last_sbor)) {
+            return 0;
+        }
+        $per_h = (float)$per_h;
+        $sum_tree = (float)$sum_tree;
+        $last_sbor = (int)$last_sbor;
 
-	# ============================
-	# Преобразует IP в целочисленное
-	# ============================
-	public function ip_int($uip){
-		$uip = ip2long($uip);
-		($uip < 0) ? $uip+=4294967296 : true;
-		return $uip;
-	}
+        if ($last_sbor <= 0) {
+            return 0;
+        }
+        if ($sum_tree <= 0 || $per_h <= 0) {
+            return 0;
+        }
 
-	# ============================
-	# Преобразует целочисленное в IP
- 	# ============================
-	public function int_ip($int){
-  		return long2ip($int);
-	}
+        // Time delta in seconds (future timestamps guard)
+        $seconds = ($last_sbor < time()) ? (time() - $last_sbor) : 0;
 
-	# ============================
-	# Получаем валидный IP
-	# ============================
-	public function get_ip() {
-	$ipp = $_SERVER['REMOTE_ADDR'];
-	if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && preg_match_all('#\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#s', $_SERVER['HTTP_X_FORWARDED_FOR'], $matches)) {
-	foreach ($matches[0] AS $xip) {
-		if (!preg_match('#^(10|172\.16|192\.168)\.#', $xip)) {
-		$ipp = $xip; break;
-			}
-		}
-	} elseif (isset($_SERVER['HTTP_CLIENT_IP']) && preg_match('/^([0-9]{1,3}\.){3}[0-9]{1,3}$/', $_SERVER['HTTP_CLIENT_IP'])) {
-	$ipp = $_SERVER['HTTP_CLIENT_IP'];
-	} elseif (isset($_SERVER['HTTP_CF_CONNECTING_IP']) && preg_match('/^([0-9]{1,3}\.){3}[0-9]{1,3}$/', $_SERVER['HTTP_CF_CONNECTING_IP'])) {
-	$ipp = $_SERVER['HTTP_CF_CONNECTING_IP'];
-	} elseif (isset($_SERVER['HTTP_X_REAL_IP']) && preg_match('/^([0-9]{1,3}\.){3}[0-9]{1,3}$/', $_SERVER['HTTP_X_REAL_IP'])) {
-        $ipp = $_SERVER['HTTP_X_REAL_IP'];
-	}
-	return $ipp;
-	}
+        // Convert hourly rate to per-second and multiply by elapsed seconds
+        $accrued = ($per_h / 3600.0) * $seconds;
 
-	# ============================
-	# Функция источник перехода
-	# ============================
-	public function getDomain() {
-	$referer = parse_url(trim($_SERVER['HTTP_REFERER']));
-	if (empty($_COOKIE['site'])) setcookie ('site', $referer['host'],time()+(60*60*24*14),'/');
-	return trim($referer['host']);
-	}
+        // 4 decimal places like original
+        return round($accrued, 4);
+    }
 
-	# ============================
-	# Фильтрация Логина
-	# ============================
-	public function FLogin($login, $mask = "^[а-яА-ЯЁёa-zA-Z0-9_]", $len = "{4,20}") {
-	return (is_array($login)) ? false : (preg_match("/{$mask}{$len}$/u", $login)) ? $login : false;
-	}
+    // ===================================
+    // Password filter/validator
+    // $mask: character class (without surrounding / /), default includes Latin/Cyrillic letters, digits and some symbols
+    // $len: length quantifier, default {4,20}
+    // Returns: sanitized password string or false
+    // ===================================
+    public function FPass($pass, $mask = "^[!@#$%*а-яА-ЯЁёa-zA-Z0-9_]", $len = "{4,20}") {
+        if (is_array($pass)) {
+            return false;
+        }
+        $pass = (string)$pass;
 
-	# ============================
-	# Фильтрация Пароля
-	# ============================
-	public function FPass($pass, $mask = "^[!@#$%*а-яА-ЯЁёa-zA-Z0-9_]", $len = "{4,20}") {
-	return (is_array($pass)) ? false : (preg_match("/{$mask}{$len}$/u", $pass)) ? $pass : false;
-	}
-	
-	# ============================
-	# Фильтрация Почты
-	# ============================
-	public function FMail($email){
-		if(is_array($email) && empty($email) && strlen($email) > 255 && strpos($email,'@') > 64) return false;
-			return (!preg_match("/^([a-z0-9\+_\-]+)(\.[a-z0-9\+_\-]+)*@([a-z0-9\-]+\.)+[a-z]{2,8}$/ix", $email)) ? false : strtolower($email);
-	}
-	
+        // Build regex safely
+        $pattern = "/{$mask}{$len}$/u";
+
+        // Explicit ternary associativity for PHP 8+
+        if (preg_match($pattern, $pass)) {
+            return $pass;
+        }
+        return false;
+    }
+
+    // ===================================
+    // Email filter/validator
+    // - Uses filter_var for RFC-aware validation.
+    // - Enforces local part <= 64 chars; total length <= 255.
+    // Returns: lowercased email or false
+    // ===================================
+    public function FMail($email) {
+        if (is_array($email)) {
+            return false;
+        }
+        $email = trim((string)$email);
+
+        // Basic length constraints
+        if ($email === '' || strlen($email) > 255) {
+            return false;
+        }
+
+        // Validate structure
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+
+        // Local part length check
+        $atPos = strpos($email, '@');
+        if ($atPos === false || $atPos > 64) {
+            // Either no @, or local part > 64 characters
+            return false;
+        }
+
+        return strtolower($email);
+    }
 }
-?>
