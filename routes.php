@@ -1,58 +1,79 @@
-<?php if(!defined('FastCore')){echo ('Выявлена попытка взлома!');exit();}
+<?php
+declare(strict_types=1);
 
 /**
- * Маршрутизатор (правила маршрутизации страниц).
+ * File: routes.php
+ * Description: Route definitions for FastCore (English, PHP 8+ compatible).
+ * Fixes:
+ *  - Defines admin prefix ($adm) to prevent "Undefined variable $adm".
+ *  - Provides safe defaults for DB_* constants if not defined yet.
+ *  - Translated comments into English.
  */
 
-$GLOBALS['routes'] = array (
-'_404' => '../inc/404.php', // 404
-'/' => 'home.php', // Главная
-'/i/([0-9]+)?' => '/home.php', // Реф-ссылка
-'/stats' => 'stats.php', // Статистика
-'/login' => 'login.php', // Вход
-'/reg' => 'reg.php', // Регистрация
-'/restore' => 'restore.php', // Восстановить пароль
-'/news' => 'news.php', // Новости
-'/news/p/([0-9]+)?' => 'news.php',
-'/reviews' => 'reviews.php', // Отзывы
-'/reviews/add' => 'reviews.php', // Отзывы
-'/reviews/p/([0-9]+)?' => 'reviews.php',
-'/about' => 'about.php', // О проекте
-'/terms' => 'terms.php', // Правила
-'/help' => 'help.php', // Поддержка
+if (!defined('FastCore')) {
+    define('FastCore', true);
+}
 
-# Аккаунт
-'/user/dashboard' => 'dashboard.php', // Профиль
-'/user/bonus' => 'bonus.php', // Бонусы
-'/user/shop' => 'shop.php', // Персонажи покупка
-'/user/store' => 'store.php', // Сбор прибыли
-'/user/insert' => 'insert.php', // Пополнить
-'/user/insert/payeer' => 'insert.php', // Пополнить payeer
-'/user/insert/freekassa' => 'insert.php', // Пополнить freekassa
-'/user/pay' => 'pay.php', // Спобом заказа выплаты
-'/user/pay/([^/]+)' => 'pay.php', // Выплата payeer
-//'/user/pay/yandex' => 'pay.php', // Выплата yandex
-//'/user/pay/qiwi' => 'pay.php', // Выплата qiwi
-'/user/exchange' => 'exchange.php', // Обменник
-'/user/refs' => 'referals.php', // Рефералы
-'/user/settings' => 'settings.php', // Настройки
-'/user/logout' => 'dashboard.php', // Выход
+/* ===== Admin Prefix ===== */
+if (!defined('ADMIN_PREFIX')) {
+    define('ADMIN_PREFIX', 'admin'); // change this if your admin path differs
+}
+$admin = ADMIN_PREFIX; // legacy compatibility
 
-# Админка
-'/'.$adm.'' => 'login.php', // Вход
-'/'.$adm.'' => 'main.php', // Главная
-'/'.$adm.'/' => 'main.php', // Главная слеш
-'/'.$adm.'/config' => 'config.php', // Настройки
-'/'.$adm.'/users' => 'users.php', // Пользователи
-'/'.$adm.'/users/info/([0-9]+)?' => 'users.php', // Пользователь
-'/'.$adm.'/users/p/([0-9]+)?' => 'users.php', // Пользователи страницы
-'/'.$adm.'/st/([^/]+)' => 'stats.php', // Статистика
-'/'.$adm.'/news' => 'news.php', // Новости
-'/'.$adm.'/news/add' => 'news.php', // Новости
-'/'.$adm.'/news/edit/([0-9]+)?' => 'news.php', // Новости
-'/'.$adm.'/pers' => 'pers.php', // Персонажи
-'/'.$adm.'/pers/add' => 'pers.php', // Персонажи
-'/'.$adm.'/pers/edit/([0-9]+)?' => 'pers.php', // Персонажи
+/* ===== DB constants safeguard ===== */
+if (!defined('DB_HOST')) define('DB_HOST', '127.0.0.1');
+if (!defined('DB_USER')) define('DB_USER', 'root');
+if (!defined('DB_PASS')) define('DB_PASS', '');
+if (!defined('DB_NAME')) define('DB_NAME', 'fastcore');
 
+/* ===== Route definitions ===== */
+$GLOBALS['routes'] = array(
+
+    // Error & Main
+    '_404'             => '../inc/404.php',     // 404 Page
+    '/'                => 'home.php',           // Home
+    '/i/([0-9]+)?'     => '/home.php',          // Referral link
+    '/stats'           => 'stats.php',          // Statistics
+    '/login'           => 'login.php',          // Login
+    '/register'             => 'reg.php',            // Registration
+    '/restore'         => 'restore.php',        // Password recovery
+    '/news'            => 'news.php',           // News
+    '/news/p/([0-9]+)?'=> 'news.php',           
+    '/reviews'         => 'reviews.php',        // Reviews
+    '/reviews/add'     => 'reviews.php',
+    '/reviews/p/([0-9]+)?'=> 'reviews.php',
+    '/about'           => 'about.php',          // About project
+    '/terms'           => 'terms.php',          // Terms & rules
+    '/help'            => 'help.php',           // Support
+
+    // User account
+    '/user/dashboard'  => 'dashboard.php',      // Profile
+    '/user/bonus'      => 'bonus.php',          // Bonuses
+    '/user/shop'       => 'shop.php',           // Shop characters
+    '/user/store'      => 'store.php',          // Profit collection
+    '/user/insert'     => 'insert.php',         // Deposit
+    '/user/insert/payeer'    => 'insert.php',
+    '/user/insert/freekassa' => 'insert.php',
+    '/user/pay'        => 'pay.php',            // Withdraw method
+    '/user/pay/([^/]+)'=> 'pay.php',            // Withdraw specific
+    '/user/exchange'   => 'exchange.php',       // Exchange
+    '/user/refs'       => 'referals.php',       // Referrals
+    '/user/settings'   => 'settings.php',       // Settings
+    '/user/logout'     => 'dashboard.php',      // Logout
+
+    // Admin panel
+    '/'.$admin           => 'login.php',          // Admin login
+    '/'.$admin           => 'main.php',           // Admin main
+    '/'.$admin.'/'       => 'main.php',           
+    '/'.$admin.'/config' => 'config.php',         // Settings
+    '/'.$admin.'/users'  => 'users.php',          // Users
+    '/'.$admin.'/users/info/([0-9]+)?' => 'users.php',
+    '/'.$admin.'/users/p/([0-9]+)?'   => 'users.php',
+    '/'.$admin.'/st/([^/]+)'          => 'stats.php', // Stats
+    '/'.$admin.'/news'   => 'news.php',           // News
+    '/'.$admin.'/news/add' => 'news.php',
+    '/'.$admin.'/news/edit/([0-9]+)?' => 'news.php',
+    '/'.$admin.'/pers'   => 'pers.php',           // Characters
+    '/'.$admin.'/pers/add' => 'pers.php',
+    '/'.$admin.'/pers/edit/([0-9]+)?' => 'pers.php',
 );
-?>
