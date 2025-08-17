@@ -3,117 +3,119 @@ declare(strict_types=1);
 
 /**
  * File: core/config.php
- * Description: Application configuration (English, PHP 8+). Centralizes environment, database,
- *              and security settings without making any DB connections here.
+ * Description: Application configuration (no DB connections here). Defines environment,
+ *              database, security, admin, and payment gateway settings.
  *
- * SECURITY NOTES:
- * - This file defines constants only; actual DB connections happen in core/classes/db.php.
- * - Do NOT commit real secrets to source control. Consider loading sensitive values from environment variables.
- * - In production, APP_DEBUG must be false to avoid leaking details.
+ * SECURITY:
+ * - Prefer environment variables for secrets. Do NOT commit real creds to Git.
+ * - Keep APP_DEBUG false in production.
  */
 
 if (!defined('FastCore')) { define('FastCore', true); }
 
-// =============================
-// Environment
-// =============================
-// Allowed values: 'development' or 'production'
-if (!defined('APP_ENV')) {
-    define('APP_ENV', getenv('APP_ENV') ?: 'production');
-}
+/* =========================
+   Environment & Debug
+   ========================= */
+if (!defined('APP_ENV'))   define('APP_ENV', getenv('APP_ENV') ?: 'production'); // production|development
+if (!defined('APP_DEBUG')) define('APP_DEBUG', APP_ENV === 'development');
 
-// Debug switch based on environment
-if (!defined('APP_DEBUG')) {
-    define('APP_DEBUG', APP_ENV === 'development');
-}
-
-// Application timezone
-if (!defined('APP_TZ')) {
-    define('APP_TZ', getenv('APP_TZ') ?: 'Asia/Tashkent');
-}
+if (!defined('APP_TZ'))    define('APP_TZ', getenv('APP_TZ') ?: 'Asia/Tashkent');
 date_default_timezone_set(APP_TZ);
 
-// =============================
-/* Database (no connection here) */
-// =============================
-// Prefer environment variables; fallback to hardcoded values.
+/* =========================
+   Database (constants only)
+   ========================= */
+// Prefer env; fallback to safe placeholders.
 if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'fastcore_user');   // CHANGE ME
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'ChangeThisPassword'); // CHANGE ME
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'fastcore_user');         // CHANGE ME
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'ChangeThisPassword');    // CHANGE ME
 if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'fastcore');
 
-// Optional: DSN socket override (if using unix_socket auth)
-// define('DB_SOCKET', '/var/lib/mysql/mysql.sock'); // Example path; leave undefined to use TCP
+// Optional socket path if you use unix_socket auth (leave undefined to use TCP)
+// if (!defined('DB_SOCKET')) define('DB_SOCKET', getenv('DB_SOCKET') ?: '/var/lib/mysql/mysql.sock');
 
-// =============================
-// Application URLs & Paths
-// =============================
-if (!defined('APP_URL')) {
-    // If set in the environment, use it; otherwise let index.php compute BASE_URL at runtime.
-    define('APP_URL', getenv('APP_URL') ?: '');
-}
+/* =========================
+   Application URLs & Paths
+   ========================= */
+if (!defined('APP_URL'))  define('APP_URL', getenv('APP_URL') ?: ''); // leave empty to auto-detect in index.php
+if (!defined('APP_ROOT')) define('APP_ROOT', dirname(__DIR__));       // project root (../ from /core)
 
-// Absolute path to project root (computed in index.php usually)
-if (!defined('APP_ROOT')) {
-    define('APP_ROOT', dirname(__DIR__));
-}
+/* =========================
+   Security / Sessions / CSRF
+   ========================= */
+if (!defined('SESSION_NAME'))     define('SESSION_NAME', getenv('SESSION_NAME') ?: 'fastcore_sid');
+if (!defined('SESSION_SAMESITE')) define('SESSION_SAMESITE', getenv('SESSION_SAMESITE') ?: 'Lax'); // Lax|Strict
+if (!defined('SESSION_LIFETIME')) define('SESSION_LIFETIME', (int)(getenv('SESSION_LIFETIME') ?: 0)); // 0 = session cookie
+if (!defined('CSRF_TTL'))         define('CSRF_TTL', (int)(getenv('CSRF_TTL') ?: 7200)); // 2 hours
 
-// =============================
-// Security / Sessions / CSRF
-// =============================
-if (!defined('SESSION_NAME')) {
-    define('SESSION_NAME', 'fastcore_sid');
-}
-if (!defined('SESSION_SAMESITE')) {
-    define('SESSION_SAMESITE', 'Lax'); // 'Lax' or 'Strict'
-}
-if (!defined('SESSION_LIFETIME')) {
-    define('SESSION_LIFETIME', 0); // session cookie
-}
+// App key (for HMAC/tokens). Use a long random value; store in env in production.
+if (!defined('APP_KEY')) define('APP_KEY', getenv('APP_KEY') ?: 'CHANGE_THIS_APP_KEY_32+CHARS');
 
-// CSRF token lifetime in seconds (e.g., 2 hours)
-if (!defined('CSRF_TTL')) {
-    define('CSRF_TTL', 7200);
-}
+// Password hashing cost (bcrypt)
+if (!defined('PASSWORD_COST')) define('PASSWORD_COST', (int)(getenv('PASSWORD_COST') ?: 12));
 
-// Crypto keys (for HMAC, encrypting tokens, etc.).
-// DO NOT hardcode real secrets in source; load from env or a secure secrets store.
-if (!defined('APP_KEY')) {
-    define('APP_KEY', getenv('APP_KEY') ?: 'CHANGE_THIS_APP_KEY'); // 32+ random chars
-}
+/* =========================
+   Admin
+   ========================= */
+// URL prefix for admin routes (maps to pages/admin/* files)
+if (!defined('ADMIN_PREFIX')) define('ADMIN_PREFIX', getenv('ADMIN_PREFIX') ?: 'admin');
 
-// Password hashing options
-if (!defined('PASSWORD_COST')) {
-    define('PASSWORD_COST', 12); // for PASSWORD_BCRYPT
-}
+// Admin access (example: basic panel auth). Prefer storing HASH, not plain.
+if (!defined('ADMIN_USER')) define('ADMIN_USER', getenv('ADMIN_USER') ?: 'admin');
+// For better security, store a password hash and compare with password_verify()
+// Example: generate with password_hash('YourStrongAdminPass', PASSWORD_BCRYPT)
+if (!defined('ADMIN_PASS_HASH')) define('ADMIN_PASS_HASH', getenv('ADMIN_PASS_HASH') ?: ''); // leave '' if unused
 
-// =============================
-// Mail (optional; adjust for your SMTP provider)
-// =============================
-if (!defined('MAIL_FROM')) define('MAIL_FROM', getenv('MAIL_FROM') ?: 'no-reply@example.com');
-if (!defined('MAIL_HOST')) define('MAIL_HOST', getenv('MAIL_HOST') ?: '');
-if (!defined('MAIL_USER')) define('MAIL_USER', getenv('MAIL_USER') ?: '');
-if (!defined('MAIL_PASS')) define('MAIL_PASS', getenv('MAIL_PASS') ?: '');
-if (!defined('MAIL_PORT')) define('MAIL_PORT', getenv('MAIL_PORT') ?: '');
-if (!defined('MAIL_SECURE')) define('MAIL_SECURE', getenv('MAIL_SECURE') ?: 'tls'); // tls|ssl
+/* =========================
+   Mail (optional SMTP)
+   ========================= */
+if (!defined('MAIL_FROM'))  define('MAIL_FROM', getenv('MAIL_FROM') ?: 'no-reply@example.com');
+if (!defined('MAIL_HOST'))  define('MAIL_HOST', getenv('MAIL_HOST') ?: '');
+if (!defined('MAIL_USER'))  define('MAIL_USER', getenv('MAIL_USER') ?: '');
+if (!defined('MAIL_PASS'))  define('MAIL_PASS', getenv('MAIL_PASS') ?: '');
+if (!defined('MAIL_PORT'))  define('MAIL_PORT', getenv('MAIL_PORT') ?: '');
+if (!defined('MAIL_SECURE'))define('MAIL_SECURE', getenv('MAIL_SECURE') ?: 'tls'); // tls|ssl
 
-// =============================
-// Error display/logging (index.php should respect APP_DEBUG)
-// =============================
+/* =========================
+   Payments — Payeer
+   =========================
+   Typical usage:
+   - Merchant account for accepting payments.
+   - API credentials for payouts/queries.
+*/
+if (!defined('PAYEER_ENABLED'))     define('PAYEER_ENABLED', (bool)(getenv('PAYEER_ENABLED') ?: false));
+if (!defined('PAYEER_MERCHANT_ID')) define('PAYEER_MERCHANT_ID', getenv('PAYEER_MERCHANT_ID') ?: '');
+if (!defined('PAYEER_MERCHANT_KEY'))define('PAYEER_MERCHANT_KEY', getenv('PAYEER_MERCHANT_KEY') ?: ''); // secret key for merchant sign
+// Optional API creds (for payouts, balance, etc.)
+if (!defined('PAYEER_ACCOUNT'))     define('PAYEER_ACCOUNT', getenv('PAYEER_ACCOUNT') ?: '');    // e.g., P1234567
+if (!defined('PAYEER_API_ID'))      define('PAYEER_API_ID', getenv('PAYEER_API_ID') ?: '');
+if (!defined('PAYEER_API_KEY'))     define('PAYEER_API_KEY', getenv('PAYEER_API_KEY') ?: '');
+
+/* =========================
+   Payments — FreeKassa
+   =========================
+   Typical usage:
+   - FK_MERCHANT_ID (shop ID), secret keys 1 & 2 for validation/callbacks.
+*/
+if (!defined('FK_ENABLED'))       define('FK_ENABLED', (bool)(getenv('FK_ENABLED') ?: false));
+if (!defined('FK_MERCHANT_ID'))   define('FK_MERCHANT_ID', getenv('FK_MERCHANT_ID') ?: '');
+if (!defined('FK_SECRET_1'))      define('FK_SECRET_1', getenv('FK_SECRET_1') ?: '');
+if (!defined('FK_SECRET_2'))      define('FK_SECRET_2', getenv('FK_SECRET_2') ?: '');
+if (!defined('FK_CURRENCY'))      define('FK_CURRENCY', getenv('FK_CURRENCY') ?: 'RUB');
+if (!defined('FK_TEST_MODE'))     define('FK_TEST_MODE', (bool)(getenv('FK_TEST_MODE') ?: false));
+// Optional: IP whitelist for callbacks, comma-separated
+if (!defined('FK_IP_WHITELIST'))  define('FK_IP_WHITELIST', getenv('FK_IP_WHITELIST') ?: '');
+
+/* =========================
+   Error display / Logging
+   ========================= */
 ini_set('display_errors', APP_DEBUG ? '1' : '0');
 ini_set('display_startup_errors', APP_DEBUG ? '1' : '0');
 ini_set('log_errors', '1');
 
-// If index.php hasn't set a log, choose a writable default under project root
+// If no error_log configured, write under project /logs (ensure writable)
 if (!ini_get('error_log') || ini_get('error_log') === '') {
     $logDir = APP_ROOT . '/logs';
     if (!is_dir($logDir)) { @mkdir($logDir, 0775, true); }
     ini_set('error_log', $logDir . '/php-error.log');
-}
-
-// =============================
-// Admin URL prefix (routes depend on it)
-// =============================
-if (!defined('ADMIN_PREFIX')) {
-    define('ADMIN_PREFIX', getenv('ADMIN_PREFIX') ?: 'admin');
 }
