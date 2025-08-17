@@ -1,6 +1,78 @@
 <?php
 declare(strict_types=1);
 
+if (!defined('FastCore')) {
+    exit('Oops!');
+}
+
+// ====================================
+// Global Debugger & Error Handling
+// ====================================
+
+// Toggle debugging here (true = verbose, false = silent prod)
+if (!defined('APP_DEBUG')) {
+    define('APP_DEBUG', true);
+}
+
+// Report all errors
+error_reporting(E_ALL);
+ini_set('display_errors', APP_DEBUG ? '1' : '0');
+ini_set('display_startup_errors', APP_DEBUG ? '1' : '0');
+ini_set('log_errors', '1');
+
+// Ensure log dir exists (relative to this file)
+$__logDir = __DIR__ . '/../logs';
+if (!is_dir($__logDir)) {
+    @mkdir($__logDir, 0755, true);
+}
+$__logFile = $__logDir . '/php-error.log';
+ini_set('error_log', $__logFile);
+
+// Simple HTML escaper local to this file ONLY (avoid dependency on func.php)
+$__esc = function (string $s): string {
+    return htmlspecialchars($s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+};
+
+// Error handler: log always; echo only when APP_DEBUG is true
+set_error_handler(function ($errno, $errstr, $errfile, $errline) use ($__esc) {
+    $msg = "PHP ERROR [$errno] $errstr in $errfile:$errline";
+    error_log($msg);
+    if (APP_DEBUG) {
+        echo "<pre style='color:#900;background:#fee;border:1px solid #d88;padding:8px'>"
+           . $GLOBALS['__esc']($msg) . "</pre>";
+    }
+    return false; // continue to PHP's internal handler too
+});
+
+// Fatal catcher
+register_shutdown_function(function () use ($__esc) {
+    $e = error_get_last();
+    if ($e && in_array($e['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+        $msg = "FATAL: {$e['message']} in {$e['file']}:{$e['line']}";
+        error_log($msg);
+        if (APP_DEBUG) {
+            echo "<pre style='color:#fff;background:#c00;padding:8px'>"
+               . $GLOBALS['__esc']($msg) . "</pre>";
+        }
+    }
+});
+
+// Exception handler
+set_exception_handler(function (Throwable $ex) use ($__esc) {
+    $msg = "UNCAUGHT " . get_class($ex) . ": " . $ex->getMessage()
+         . " in " . $ex->getFile() . ":" . $ex->getLine()
+         . "\n" . $ex->getTraceAsString();
+    error_log($msg);
+    if (APP_DEBUG) {
+        echo "<pre style='color:#004;background:#eef;padding:8px;white-space:pre-wrap'>"
+           . $GLOBALS['__esc']($msg) . "</pre>";
+    } else {
+        echo "Internal Server Error";
+    }
+});
+
+
+
 /**
  * File: core/config.php
  * Description: Application configuration (no DB connections here). Defines environment,
@@ -12,6 +84,11 @@ declare(strict_types=1);
  */
 
 if (!defined('FastCore')) { define('FastCore', true); }
+
+// core/config.php
+if (!defined('APP_DEBUG')) {
+    define('APP_DEBUG', true);
+}
 
 /* =========================
    Environment & Debug
@@ -26,10 +103,10 @@ date_default_timezone_set(APP_TZ);
    Database (constants only)
    ========================= */
 // Prefer env; fallback to safe placeholders.
-if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1');
-if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'fastcore_user');         // CHANGE ME
-if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'ChangeThisPassword');    // CHANGE ME
-if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'fastcore');
+if (!defined('DB_HOST')) define('DB_HOST', getenv('DB_HOST') ?: '127.0.0.1:3311');
+if (!defined('DB_USER')) define('DB_USER', getenv('DB_USER') ?: 'fastcore');         // CHANGE ME
+if (!defined('DB_PASS')) define('DB_PASS', getenv('DB_PASS') ?: 'yourdbpassword');    // CHANGE ME
+if (!defined('DB_NAME')) define('DB_NAME', getenv('DB_NAME') ?: 'fastcore');     // CHANGE ME
 
 // Optional socket path if you use unix_socket auth (leave undefined to use TCP)
 // if (!defined('DB_SOCKET')) define('DB_SOCKET', getenv('DB_SOCKET') ?: '/var/lib/mysql/mysql.sock');
@@ -109,8 +186,8 @@ if (!defined('FK_IP_WHITELIST'))  define('FK_IP_WHITELIST', getenv('FK_IP_WHITEL
 /* =========================
    Error display / Logging
    ========================= */
-ini_set('display_errors', APP_DEBUG ? '1' : '0');
-ini_set('display_startup_errors', APP_DEBUG ? '1' : '0');
+ini_set('display_errors', APP_DEBUG ? '1' : '1');
+ini_set('display_startup_errors', APP_DEBUG ? '1' : '1');
 ini_set('log_errors', '1');
 
 // If no error_log configured, write under project /logs (ensure writable)
